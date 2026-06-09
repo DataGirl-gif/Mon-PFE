@@ -1,0 +1,94 @@
+{% extends 'core/base.html' %}
+{% block title %}Catalogue des Examens - Ibn Heitham{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <a href="{% url 'interface_principale_laboratoire' %}" class="btn btn-outline-secondary fw-bold shadow-sm">
+        <i class="bi bi-arrow-left"></i> Retour aux Patients
+    </a>
+    <a href="{% url 'ajouter_nouvel_examen' %}" class="btn btn-primary fw-bold shadow-sm">
+        <i class="bi bi-plus-lg"></i> Ajouter un nouvel examen
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-md-7">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-primary text-white fw-bold d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-flask"></i> Catalogue Technique</span>
+                <span class="badge bg-light text-primary">{{ analyses.count }}</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3" style="width: 10%;">N°</th>
+                            <th style="width: 40%;">Désignation</th>
+                            <th style="width: 15%;">Unité</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody id="catalogue-body">
+                        {% for analyse in analyses %}
+                        <tr style="cursor: pointer;" onclick="loadAnalyse('{{ analyse.id }}', '{{ analyse.nom|escapejs }}', '{{ analyse.prix }}', '{{ analyse.unite|default:''|escapejs }}', '{{ analyse.valeurs_normales|default:''|escapejs }}')">
+                            <td class="ps-3 fw-bold text-secondary">{{ forloop.counter }}</td>
+                            <td class="fw-bold text-dark">{{ analyse.nom }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ analyse.unite|default:"—" }}</span></td>
+                            <td class="small text-muted">{{ analyse.valeurs_normales|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-5">
+        <div class="card shadow-sm border-0 rounded-3 p-4">
+            <h5 class="fw-bold mb-3 border-bottom pb-2">
+                <i class="bi bi-pencil-square text-primary"></i> Modifier l'examen
+            </h5>
+            <form id="form-edition" method="post" action="">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted">Désignation</label>
+                    <input type="text" name="nom" id="id_nom" class="form-control" required>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="small fw-bold text-muted">Prix (MRU)</label>
+                        <input type="number" step="0.01" name="prix" id="id_prix" class="form-control" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="small fw-bold text-muted">Unité</label>
+                        <input type="text" name="unite" id="id_unite" class="form-control">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="small fw-bold text-muted">Description</label>
+                    <textarea name="valeurs_normales" id="id_valeurs" class="form-control" rows="5"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success w-100 fw-bold py-2">
+                    Enregistrer les modifications
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function loadAnalyse(id, nom, prix, unite, valeurs) {
+    document.getElementById('id_nom').value = nom;
+    document.getElementById('id_prix').value = prix;
+    document.getElementById('id_unite').value = unite;
+    document.getElementById('id_valeurs').value = valeurs;
+    
+    // Met à jour l'action du formulaire pour cibler la bonne URL
+    document.getElementById('form-edition').action = "/modifier-examen/" + id + "/";
+    
+    // Feedback visuel : léger scroll vers le haut pour voir le formulaire
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Bulletin d'analyses #{{ visite.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; padding: 40px; background-color: #fff; color: #000; }
+        .labo-header { text-align: center; border-bottom: 2px solid #000; padding-bottom: 15px; margin-bottom: 30px; }
+        .labo-name { font-size: 28px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .bulletin-title { text-align: center; font-size: 24px; font-weight: bold; text-transform: uppercase; margin-top: 20px; margin-bottom: 30px; text-decoration: underline; }
+        
+        /* Encadré d'informations du patient */
+        .patient-info-box { border: 1px solid #000; padding: 15px; border-radius: 8px; margin-bottom: 35px; background-color: #fafafa; }
+        
+        /* Style épuré, sans bordures verticales */
+        .table-labo { width: 100%; margin-top: 20px; border-collapse: collapse; table-layout: fixed; }
+        .table-labo th { 
+            border-bottom: 2px solid #000; /* Ligne noire sous les titres */
+            padding: 10px 5px; 
+            font-weight: bold; 
+            font-size: 15px;
+            text-transform: uppercase;
+        }
+        .table-labo td { 
+            padding: 12px 5px; 
+            font-size: 15px; 
+            vertical-align: top; /* Aligne STRICTEMENT le texte en haut pour les longues normes */
+        }
+        .table-labo tr:last-child td {
+            border-bottom: 2px solid #000; /* Ligne noire finale pour fermer le tableau */
+        }
+        
+        .result-value { font-size: 16px; font-weight: bold; color: #000; }
+        
+        /* FORCE l'affichage des sauts de ligne et l'alignement vertical pour la FSH */
+        .valeurs-normales-text { 
+            white-space: pre-wrap !important; 
+            display: block;
+            font-size: 14px; 
+            color: #000; 
+            line-height: 1.4;
+            text-align: left;
+        }
+        
+        @media print { .no-print { display: none !important; } body { padding: 20px; } }
+    </style>
+</head>
+<body>
+
+<div class="container no-print text-center mb-4">
+    <button onclick="window.print();" class="btn btn-primary px-5 fw-bold shadow-sm">
+        <i class="bi bi-printer"></i> Imprimer le Bulletin de Résultats
+    </button>
+</div>
+
+<div class="mx-auto" style="max-width: 850px;">
+    
+    <div class="labo-header">
+        <div class="labo-name">Laboratoire Ibn Heitham</div>
+        <div class="text-muted small">Analyses Médicales Numérisées</div>
+    </div>
+
+    <div class="bulletin-title">Bulletin d'analyses</div>
+
+    <div class="patient-info-box">
+        <div class="row">
+            <div class="col-6 lh-lg">
+                <div>Code Visite : <strong>#{{ visite.id }}</strong></div>
+                <div>Nom & Prénom : <strong class="text-uppercase">{{ visite.patient.nom }}</strong> {{ visite.patient.prenom }}</div>
+                <div>Date de Naissance : <strong>{% if visite.patient.date_naissance %}{{ visite.patient.date_naissance|date:"d/m/Y" }}{% else %}—{% endif %}</strong></div>
+                <div>Sexe du Patient : <strong>
+                    {% if visite.patient.sexe == 'H' or visite.patient.sexe == 'M' or visite.patient.sexe == 0 or visite.patient.sexe == '0' %}
+                        Homme
+                    {% elif visite.patient.sexe == 'F' or visite.patient.sexe == 1 or visite.patient.sexe == '1' %}
+                        Femme
+                    {% else %}
+                        {{ visite.patient.sexe|default:"—" }}
+                    {% endif %}
+                </strong></div>
+            </div>
+            <div class="col-6 text-end lh-lg">
+                <div>Date Prélèvement : <strong>{{ visite.date_visite|date:"d/m/Y H:i" }}</strong></div>
+                <div>Date Édition : <strong>{{ date_actuelle }}</strong></div>
+                <div>Médecin Prescripteur : <strong>{{ visite.docteur_prescripteur|default:"Non Spécifié" }}</strong></div>
+            </div>
+        </div>
+    </div>
+
+    <table class="table-labo">
+        <thead>
+            <tr>
+                <th class="text-start" style="width: 35%;">Examen</th>
+                <th class="text-center" style="width: 20%;">Resultat</th>
+                <th class="text-start" style="width: 15%;">Unité</th>
+                <th class="text-start" style="width: 30%;">V.Normales</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in examens %}
+            <tr>
+                <td class="text-start font-weight-normal text-dark">{{ item.analyse.nom }}</td>
+                
+                <td class="text-center result-value">
+                    {% if item.valeur_resultat %}
+                        {{ item.valeur_resultat }}
+                    {% else %}
+                        <span style="font-weight: normal; color: #000;">—</span>
+                    {% endif %}
+                </td>
+                
+                <td class="text-start font-weight-normal">{{ item.analyse.unite|default:"/" }}</td>
+                
+                <td class="text-start">
+                    <span class="valeurs-normales-text">{% if item.analyse.valeurs_normales %}{{ item.analyse.valeurs_normales }}{% else %}/{% endif %}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-muted py-4 text-center">Aucun examen enregistré pour cette visite.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

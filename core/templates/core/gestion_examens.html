@@ -1,0 +1,135 @@
+{% extends 'core/base.html' %}
+{% block title %}Dossier #{{ visite.id }} - Laboratoire Ibn Heitham{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4 class="fw-bold m-0 text-dark">
+        Fiche d'analyses : <span class="text-primary">{{ visite.patient.nom|upper }} {{ visite.patient.prenom }}</span> (Dossier #{{ visite.id }})
+    </h4>
+    <a href="{% url 'interface_principale_laboratoire' %}" class="btn btn-secondary px-3 fw-bold">
+        <i class="bi bi-house"></i> Menu Principal
+    </a>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-3">
+        <div class="card shadow-sm border-0 rounded-3 mb-3">
+            <div class="card-header bg-primary text-white fw-bold">Sélection Catalogue</div>
+            <div class="card-body p-3">
+                <form method="post" action="{% url 'gestion_examens_visite' visite.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Choisir une analyse</label>
+                        <select name="analyse_choisie" class="form-select fw-bold" required>
+                            <option value="">-- Choisir l'examen --</option>
+                            {% for analyse in analyses_catalogue %}
+                                <option value="{{ analyse.id }}">{{ analyse.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <button type="submit" name="ajouter_analyse" class="btn btn-primary w-100 fw-bold mb-2">
+                        <i class="bi bi-plus-circle"></i> Ajouter
+                    </button>
+                </form>
+            </div>
+        </div>
+        <a href="{% url 'interface_principale_laboratoire' %}" class="btn btn-light border w-100 fw-bold mb-2 text-secondary">
+            <i class="bi bi-arrow-left-square"></i> Menu Principal
+        </a>
+        <button onclick="window.print();" class="btn btn-outline-secondary w-100 fw-bold">
+            <i class="bi bi-printer"></i> Imprimer la fiche technique
+        </button>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-dark text-white fw-bold">Résultats du Patient</div>
+            <div class="card-body p-0">
+                <table class="table table-bordered align-middle text-center m-0">
+                    <thead class="table-light small text-uppercase fw-bold text-secondary">
+                        <tr>
+                            <th>N°</th>
+                            <th>Désignation</th>
+                            <th>Résultat Actuel</th>
+                            <th>Unité</th>
+                            <th>Valeurs Normales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in examens_patient %}
+                        <tr class="{% if item.valeur_resultat %}table-success bg-opacity-10{% endif %}">
+                            <td class="fw-bold">{{ forloop.counter }}</td>
+                            <td class="text-start fw-bold text-dark">{{ item.analyse.nom }}</td>
+                            <td class="text-primary fw-bold fs-5">
+                                {% if item.valeur_resultat %}
+                                    {{ item.valeur_resultat }}
+                                {% else %}
+                                    <span class="text-muted small">À saisir</span>
+                                {% endif %}
+                            </td>
+                            <td class="fw-semibold">{{ item.analyse.unite|default:"/" }}</td>
+                            <td class="small text-muted">{{ item.analyse.valeurs_normales|default:"/" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-muted py-5 text-center">Aucun examen rattaché pour l'instant.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="card-footer bg-light p-3 border-top d-flex gap-2 justify-content-center align-items-center">
+                <a href="{% url 'imprimer_recu_facture' visite.id %}" target="_blank" class="btn btn-outline-danger fw-bold px-3">
+                    <i class="bi bi-receipt"></i> Imprimer le reçu
+                </a>
+                <a href="{% url 'imprimer_bulletin_resultats' visite.id %}" target="_blank" class="btn btn-primary fw-bold px-3">
+                    <i class="bi bi-file-earmark-medical"></i> Voir / Imprimer le bulletin d'analyses
+                </a>
+                
+                {% if visite.statut != 'VALIDE' %}
+                <form method="post" action="{% url 'gestion_examens_visite' visite.id %}" class="m-0">
+                    {% csrf_token %}
+                    <button type="submit" name="valider_visite" class="btn btn-success fw-bold px-3">
+                        <i class="bi bi-patch-check"></i> Valider cette visite
+                    </button>
+                </form>
+                {% else %}
+                <span class="badge bg-success p-2 fw-bold fs-6"><i class="bi bi-check-circle-fill"></i> Validée</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3">
+        <div class="card shadow-sm border-0 rounded-3 bg-white">
+            <div class="card-header bg-secondary text-white fw-bold">Saisie & Modifications</div>
+            <div class="card-body p-3">
+                <form method="post" action="{% url 'gestion_examens_visite' visite.id %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Examen à modifier</label>
+                        <select name="ligne_id" class="form-select fw-bold" required>
+                            <option value="">-- Choisir la ligne --</option>
+                            {% for item in examens_patient %}
+                                <option value="{{ item.id }}">{{ forloop.counter }} - {{ item.analyse.nom }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-muted">Résultat à enregistrer</label>
+                        <input type="text" name="valeur_resultat" class="form-control fw-bold text-center text-primary" placeholder="Ex: 1.05" required>
+                    </div>
+                    
+                    <button type="submit" name="sauvegarder_resultat" class="btn btn-success w-100 fw-bold mb-2">
+                        <i class="bi bi-pencil-square"></i> Enregistrer le résultat
+                    </button>
+                    <button type="submit" name="supprimer_ligne" class="btn btn-outline-danger w-100 fw-bold" onclick="return confirm('Supprimer cet examen ?');">
+                        <i class="bi bi-trash"></i> Retirer l'examen
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

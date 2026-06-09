@@ -1,0 +1,76 @@
+{% extends 'core/base.html' %}
+{% block title %}Registre des Visites - Ibn Heitham{% endblock %}
+{% block content %}
+
+<div class="card shadow-sm border-0 rounded-3 mb-4">
+    <div class="card-body bg-white py-3 rounded-3">
+        <form method="GET" action="{% url 'liste_visites' %}" class="row g-2 align-items-center">
+            <div class="col-md-9 col-sm-8">
+                <div class="input-group">
+                    <span class="input-group-text bg-light text-secondary border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" name="search_query" value="{{ search_query }}" class="form-control bg-light border-start-0 ps-0" placeholder="Rechercher par N° de visite, nom ou prénom du patient...">
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-4 d-grid gap-2 d-md-flex">
+                <button type="submit" class="btn btn-primary px-4 fw-semibold w-100">Filtrer</button>
+                {% if search_query %}
+                    <a href="{% url 'liste_visites' %}" class="btn btn-outline-secondary"><i class="bi bi-arrow-clockwise"></i></a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-dark text-white py-3 fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-collection"></i> Registre Historique des Visites</span>
+        <span class="badge bg-primary">{{ visites.count }} Résultat(s)</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 text-center">
+                <thead class="table-light small text-uppercase fw-bold text-secondary">
+                    <tr>
+                        <th>N° Visite</th>
+                        <th>Patient</th>
+                        <th>Date d'admission</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for visite in visites %}
+                    <tr>
+                        <td class="fw-bold text-primary">#{{ visite.id }}</td>
+                        <td class="text-start"><strong>{{ visite.patient.nom|upper }}</strong> {{ visite.patient.prenom }}</td>
+                        <td class="small text-muted">{{ visite.date_visite|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if visite.statut == 'VALIDE' %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Validé</span>
+                            {% else %}
+                                <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3">En Cours</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <a href="{% url 'gestion_examens_visite' visite.id %}" class="btn btn-sm btn-primary px-3 fw-bold">
+                                    Ouvrir <i class="bi bi-folder2-open"></i>
+                                </a>
+                                <a href="{% url 'supprimer_visite' visite.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Êtes-vous sûr de vouloir supprimer définitivement la visite N° {{ visite.id }} ? Cette action annulera tous ses examens.');">
+                                    <i class="bi bi-trash3"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted py-5 text-center">Aucune visite ne correspond à votre recherche.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

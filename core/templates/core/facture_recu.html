@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture Reçu #{{ visite.id }}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { font-family: Arial, sans-serif; padding: 30px; background-color: #fff; }
+        .invoice-header-title { text-align: center; font-size: 26px; font-weight: bold; text-transform: uppercase; margin-bottom: 35px; letter-spacing: 1px; }
+        .box-totals { float: right; width: 340px; margin-top: 20px; border: 2px solid #000; background-color: #f9f9f9; }
+        .box-totals td { padding: 9px 12px; border: 1px solid #ddd; font-size: 14px; }
+        @media print { .no-print { display: none !important; } }
+    </style>
+</head>
+<body>
+
+<div class="container no-print text-center mb-4">
+    <button onclick="window.print();" class="btn btn-danger px-5 fw-bold shadow-sm">Lancer l'impression du reçu</button>
+</div>
+
+<div class="border p-4 rounded shadow-sm mx-auto" style="max-width: 850px;">
+    <div class="invoice-header-title">Facture</div>
+
+    <div class="row mb-4 fs-6">
+        <div class="col-6 lh-lg">
+            <div>Numero visite : <strong>#{{ visite.id }}</strong></div>
+            <div>Numero Patient : <strong>#{{ visite.patient.id }}</strong></div>
+        </div>
+        <div class="col-6 text-end lh-lg">
+            <div>Date de visite : <strong>{{ date_actuelle }}</strong></div>
+            <div>Patient : <strong>{{ visite.patient.nom|upper }} {{ visite.patient.prenom }}</strong></div>
+        </div>
+    </div>
+
+    <table class="table table-bordered text-center align-middle mt-4">
+        <thead class="table-secondary fw-bold text-uppercase small">
+            <tr>
+                <th class="text-start" style="width: 70%;">Examen</th>
+                <th>Prix</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in examens %}
+            <tr>
+                <td class="text-start fw-semibold">{{ item.analyse.nom }}</td>
+                <td class="fw-bold text-secondary">{{ item.analyse.prix }} MRU</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="d-flex justify-content-end mt-3">
+        <table class="box-totals">
+            <tr>
+                <td class="fw-semibold text-muted">Frais des analyses brut</td>
+                <td class="text-end fw-bold text-dark">{{ frais_brut }} MRU</td>
+            </tr>
+            <tr>
+                <td class="fw-semibold text-muted">Frais des analyses net</td>
+                <td class="text-end fw-bold text-dark">{{ frais_net }} MRU</td>
+            </tr>
+            <tr>
+                <td class="fw-semibold text-muted">majoration</td>
+                <td class="text-end text-secondary">+ {{ visite.majoration }} MRU</td>
+            </tr>
+            <tr>
+                <td class="fw-semibold text-muted">Déplacement</td>
+                <td class="text-end text-secondary">+ {{ visite.deplacement }} MRU</td>
+            </tr>
+            <tr class="table-dark text-white fw-bold fs-5">
+                <td>Net à payer</td>
+                <td class="text-end text-warning">{{ net_a_payer }} MRU</td>
+            </tr>
+        </table>
+    </div>
+    <div style="clear: both;"></div>
+</div>
+
+</body>
+</html>

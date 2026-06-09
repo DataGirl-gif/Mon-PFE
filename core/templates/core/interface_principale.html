@@ -1,0 +1,134 @@
+{% extends 'core/base.html' %}
+{% block title %}Accueil - Laboratoire Ibn Heitham{% endblock %}
+{% block content %}
+
+<div class="card shadow-sm mb-4 border-0 rounded-3">
+    <div class="card-body bg-light p-3">
+        <form method="get" class="d-flex gap-2 m-0">
+            <input type="text" name="search_query" class="form-control" placeholder="Chercher un patient par son nom ou prénom..." value="{{ search_query|default:'' }}">
+            <button type="submit" class="btn btn-primary px-4 fw-bold">OK</button>
+        </form>
+    </div>
+</div>
+
+{% if resultats_patients %}
+<div class="card shadow-sm mb-4 border-0 border-start border-4 border-info rounded-3">
+    <div class="card-header bg-white fw-bold text-info"><i class="bi bi-search"></i> Patient(s) Correspondant(s) :</div>
+    <div class="list-group list-group-flush">
+        {% for patient in resultats_patients %}
+            <div class="list-group-item d-flex justify-content-between align-items-center">
+                <span>ID: <strong>#{{ patient.id }}</strong> — <strong class="text-uppercase">{{ patient.nom }}</strong> {{ patient.prenom }} — Tél: {{ patient.telephone }}</span>
+                <span class="text-muted small">Inscrit au système</span>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-primary text-white py-3 fw-bold">
+                <i class="bi bi-journal-plus"></i> Enregistrement Patient & Visite
+            </div>
+            <div class="card-body p-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <h6 class="text-primary fw-bold mb-3 border-bottom pb-1">Fiche Patient (Carnet)</h6>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Prénom</label>
+                        {{ form_patient.prenom }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Nom</label>
+                        {{ form_patient.nom }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Date de naissance (Optionnel)</label>
+                        {{ form_patient.date_naissance }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Sexe</label>
+                        {{ form_patient.sexe }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Téléphone</label>
+                        {{ form_patient.telephone }}
+                    </div>
+                    
+                    <h6 class="text-primary fw-bold mt-4 mb-3 border-bottom pb-1">Paramètres de Visite & Tarifs</h6>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Docteur Prescripteur (Optionnel)</label>
+                        {{ form_visite.docteur_prescripteur }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Majoration (MRU)</label>
+                        {{ form_visite.majoration }}
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label small fw-semibold text-muted">Déplacement (MRU)</label>
+                        {{ form_visite.deplacement }}
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-semibold text-muted">Taux de Réduction (%)</label>
+                        {{ form_visite.taux_reduction }}
+                    </div>
+                    
+                    <button type="submit" class="btn btn-success w-100 fw-bold py-2 mt-3 shadow-sm">
+                        <i class="bi bi-check-circle-fill"></i> Enregistrer & Ouvrir Examens
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-8">
+        <div class="card shadow-sm border-0 rounded-3">
+            <div class="card-header bg-dark text-white py-3 fw-bold">
+                <i class="bi bi-calendar3"></i> Registre Général des Visites du Laboratoire
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle m-0 text-center">
+                        <thead class="table-light small text-uppercase fw-bold text-secondary">
+                            <tr>
+                                <th>N° Visite</th>
+                                <th>Patient</th>
+                                <th>Date d'admission</th>
+                                <th>Statut</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for visite in toutes_les_visites %}
+                            <tr>
+                                <td class="fw-bold text-primary">#{{ visite.id }}</td>
+                                <td class="text-start"><strong>{{ visite.patient.nom|upper }}</strong> {{ visite.patient.prenom }}</td>
+                                <td class="small text-muted">{{ visite.date_visite|date:"d/m/Y H:i" }}</td>
+                                <td>
+                                    {% if visite.statut == 'VALIDE' %}
+                                        <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded-pill px-3">Validé</span>
+                                    {% else %}
+                                        <span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 rounded-pill px-3">En Cours</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'gestion_examens_visite' visite.id %}" class="btn btn-sm btn-outline-primary px-3 fw-bold">
+                                        Voir la Fiche <i class="bi bi-arrow-right-short"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-muted py-5 text-center">Aucune visite enregistrée pour le moment.</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,60 @@
+{% extends 'core/base.html' %}
+{% block title %}Fiches Techniques - Ibn Heitham{% endblock %}
+{% block content %}
+
+<div class="card shadow-sm border-0 rounded-3">
+    <div class="card-header bg-secondary text-white py-3 fw-bold d-flex justify-content-between align-items-center">
+        <span><i class="bi bi-file-earmark-text"></i> Suivi Technique des Examens (Paillasse)</span>
+        <span class="badge bg-light text-secondary fw-bold">{{ fiches.count }} Examen(s) au total</span>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle m-0 text-center">
+                <thead class="table-light small text-uppercase fw-bold text-secondary">
+                    <tr>
+                        <th>N° Visite</th>
+                        <th>Patient</th>
+                        <th>Analyse Demandée</th>
+                        <th>Résultat Actuel</th>
+                        <th>Action Saisie</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for fiche in fiches %}
+                    <tr>
+                        <td class="small fw-bold">#{{ fiche.visite.id }}</td>
+                        <td class="text-start">
+                            <strong>{{ fiche.visite.patient.nom|upper }}</strong> {{ fiche.visite.patient.prenom }}
+                        </td>
+                        <td class="text-start text-primary fw-semibold">
+                            <i class="bi bi-flask text-secondary"></i> {{ fiche.analyse.nom }}
+                        </td>
+                        <td>
+                            {% if fiche.valeur_resultat %}
+                                <span class="badge bg-success bg-opacity-10 text-success border border-success border-opacity-25 rounded px-2 font-monospace">
+                                    {{ fiche.valeur_resultat }} {{ fiche.analyse.unite }}
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger bg-opacity-10 text-danger border border-danger border-opacity-25 rounded px-2">
+                                    <i class="bi bi-exclamation-circle"></i> À saisir
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'gestion_examens_visite' fiche.visite.id %}" class="btn btn-sm btn-outline-secondary px-3">
+                                <i class="bi bi-pencil-square"></i> Gérer le dossier
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-muted py-5 text-center">Aucun examen n'est en attente de traitement technique.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

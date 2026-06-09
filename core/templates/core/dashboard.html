@@ -1,0 +1,78 @@
+{% extends 'core/base.html' %}
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-lg-8">
+        <div class="card shadow-sm p-4 h-100">
+            <h6 class="fw-bold mb-4 text-dark"><i class="bi bi-graph-up me-2 text-primary"></i>Activité Mensuelle</h6>
+            <div style="height: 300px;"><canvas id="mainChart"></canvas></div>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="card shadow-sm p-4 h-100">
+            <h6 class="fw-bold mb-4 text-dark"><i class="bi bi-pie-chart me-2 text-primary"></i>Statut des Dossiers</h6>
+            <div style="height: 300px;"><canvas id="donutChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-12">
+        <div class="card shadow-sm p-4">
+            <h6 class="fw-bold mb-4 text-dark"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Volume d'examens par patient récent</h6>
+            <div style="height: 250px;"><canvas id="patientsChart"></canvas></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Line Chart
+    new Chart(document.getElementById('mainChart'), {
+        type: 'line',
+        data: {
+            labels: {{ labels_evolution|safe }},
+            datasets: [{
+                data: {{ data_evolution|safe }},
+                borderColor: '#0d6efd',
+                backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                fill: true,
+                tension: 0.4
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    // Donut Chart
+    new Chart(document.getElementById('donutChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['En attente', 'Validés'],
+            datasets: [{
+                data: {{ statuts_data|safe }},
+                backgroundColor: ['#ffc107', '#198754']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    // Bar Chart Horizontal
+    new Chart(document.getElementById('patientsChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ labels_patients|safe }},
+            datasets: [{
+                label: 'Nombre d\'examens',
+                data: {{ data_examens|safe }},
+                backgroundColor: '#6c757d',
+                borderRadius: 5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+</script>
+{% endblock %}
