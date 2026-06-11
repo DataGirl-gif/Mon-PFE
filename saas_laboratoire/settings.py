@@ -120,7 +120,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/' 
+# Static files (CSS, JavaScript, Images)
+STATIC_URL = '/static/'
+# On utilise la méthode slash du module pathlib
+STATICFILES_DIRS = [
+    BASE_DIR / 'core' / 'static',
+]
+
+
 
 
 AUTH_USER_MODEL = 'core.Utilisateur'
